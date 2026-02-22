@@ -1,0 +1,103 @@
+syntax = "proto3";
+
+package com.multiplayer.server;
+
+option java_package = "com.multiplayer.server.proto";
+option java_outer_classname = "GameMessages";
+option java_multiple_files = false;
+
+/**
+ * Top-level wrapper for all client ↔ server messages.
+ * The type field acts as a discriminator; the payload carries
+ * the serialized inner message as raw bytes.
+ */
+message Packet {
+
+    enum Type {
+        UNKNOWN       = 0;
+        JOIN          = 1;
+        LEAVE         = 2;
+        PLAYER_INPUT  = 3;
+        STATE_UPDATE  = 4;
+        CHAT          = 5;
+        CREATE_LOBBY  = 6;
+        JOIN_LOBBY    = 7;
+        LEAVE_LOBBY   = 8;
+        LOGIN         = 9;
+    }
+
+    Type   type      = 1;
+    bytes  payload   = 2;
+    int64  timestamp = 3;
+}
+
+// ── Lobby messages ──────────────────────────────────────────────────
+
+/** Client requests creation of a new lobby. */
+message CreateLobbyRequest {
+    string lobby_name   = 1;
+    int32  max_players  = 2;
+}
+
+/** Server confirms lobby creation. */
+message CreateLobbyResponse {
+    bool   success  = 1;
+    string lobby_id = 2;
+    string message  = 3;
+}
+
+/** Client requests to join an existing lobby. */
+message JoinLobbyRequest {
+    string lobby_id = 1;
+}
+
+/** Server confirms join result. */
+message JoinLobbyResponse {
+    bool   success       = 1;
+    string lobby_id      = 2;
+    int32  player_count  = 3;
+    string message       = 4;
+}
+
+/** Client requests to leave a lobby. */
+message LeaveLobbyRequest {
+    string lobby_id = 1;
+}
+
+// ── Game messages ───────────────────────────────────────────────────
+
+/** Client sends directional input each frame. */
+message InputPacket {
+    string player_id = 1;
+    float  dx        = 2;   // horizontal input (-1.0 to 1.0)
+    float  dy        = 3;   // vertical   input (-1.0 to 1.0)
+    int64  sequence  = 4;   // client-side frame sequence for reconciliation
+}
+
+/** A single player's authoritative position. */
+message PlayerSnapshot {
+    string player_id = 1;
+    float  x         = 2;
+    float  y         = 3;
+}
+
+/** Full world state broadcast by the server each tick. */
+message WorldStateSnapshot {
+    int64                   tick    = 1;
+    repeated PlayerSnapshot players = 2;
+    int64                   timestamp = 3;
+}
+
+// ── Auth messages ───────────────────────────────────────────────────
+
+/** Client sends credentials to log in. */
+message LoginRequest {
+    string username = 1;
+    string password = 2;
+}
+
+/** Server responds with the authentication result. */
+message LoginResponse {
+    bool   success  = 1;
+    string message  = 2;
+}
