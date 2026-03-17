@@ -1,5 +1,7 @@
 package com.multiplayer.server.network;
 
+import com.multiplayer.server.db.UserRepository;
+import com.multiplayer.server.lobby.LobbyManager;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelPipeline;
 import io.netty.channel.socket.SocketChannel;
@@ -22,8 +24,14 @@ import io.netty.handler.stream.ChunkedWriteHandler;
  */
 public final class WebSocketServerInitializer extends ChannelInitializer<SocketChannel> {
 
-    private static final String WEBSOCKET_PATH = "/ws";
+    private static final String WEBSOCKET_PATH = "/game";
     private static final int MAX_CONTENT_LENGTH = 65_536;
+
+    private final MessageRouter messageRouter;
+
+    public WebSocketServerInitializer(LobbyManager lobbyManager, UserRepository userRepository) {
+        this.messageRouter = new MessageRouter(lobbyManager, userRepository);
+    }
 
     @Override
     protected void initChannel(SocketChannel ch) {
@@ -38,7 +46,7 @@ public final class WebSocketServerInitializer extends ChannelInitializer<SocketC
         pipeline.addLast(new WebSocketServerCompressionHandler());
         pipeline.addLast(new WebSocketServerProtocolHandler(WEBSOCKET_PATH, null, true));
 
-        // Application-level frame handler
-        pipeline.addLast(new GameFrameHandler());
+        // Application-level frame handler for protobuf packets
+        pipeline.addLast(new WebSocketFrameHandler(messageRouter));
     }
 }

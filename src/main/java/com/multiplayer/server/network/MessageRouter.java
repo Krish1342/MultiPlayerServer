@@ -4,8 +4,10 @@ import com.google.protobuf.InvalidProtocolBufferException;
 import com.multiplayer.server.db.UserRepository;
 import com.multiplayer.server.lobby.Lobby;
 import com.multiplayer.server.lobby.LobbyManager;
+import com.multiplayer.server.lobby.Lobby.LobbyState;
 import com.multiplayer.server.proto.GameMessages.CreateLobbyRequest;
 import com.multiplayer.server.proto.GameMessages.CreateLobbyResponse;
+import com.multiplayer.server.proto.GameMessages.InputPacket;
 import com.multiplayer.server.proto.GameMessages.JoinLobbyRequest;
 import com.multiplayer.server.proto.GameMessages.JoinLobbyResponse;
 import com.multiplayer.server.proto.GameMessages.LeaveLobbyRequest;
@@ -34,6 +36,8 @@ public final class MessageRouter {
 
     private final LobbyManager lobbyManager;
     private final UserRepository userRepository;
+    /** channelId -> lobbyId mapping used for fast input routing. */
+    private final java.util.concurrent.ConcurrentHashMap<String, String> channelLobbyMap = new java.util.concurrent.ConcurrentHashMap<>();
 
     public MessageRouter(LobbyManager lobbyManager, UserRepository userRepository) {
         this.lobbyManager = lobbyManager;
@@ -57,8 +61,7 @@ public final class MessageRouter {
             case LEAVE_LOBBY -> handleLeaveLobby(ctx, channelId, packet);
             case JOIN -> logger.info("[{}] JOIN received", channelId);
             case LEAVE -> logger.info("[{}] LEAVE received", channelId);
-            case PLAYER_INPUT -> logger.debug("[{}] PLAYER_INPUT received ({} bytes payload)",
-                    channelId, packet.getPayload().size());
+            case PLAYER_INPUT -> handlePlayerInput(ctx, channelId, packet);
             case STATE_UPDATE -> logger.debug("[{}] STATE_UPDATE received", channelId);
             case CHAT -> logger.info("[{}] CHAT received", channelId);
             default -> logger.warn("[{}] Unknown packet type: {}", channelId, packet.getType());
@@ -130,6 +133,7 @@ public final class MessageRouter {
 
             // Auto-join the creator
             lobby.addPlayer(ctx);
+            channelLobbyMap.put(channelId, lobby.getLobbyId());
 
             sendResponse(ctx, Packet.Type.CREATE_LOBBY, CreateLobbyResponse.newBuilder()
                     .setSuccess(true)
@@ -162,6 +166,7 @@ public final class MessageRouter {
                     .setLobbyId(lobbyId);
 
             if (joined) {
+                channelLobbyMap.put(channelId, lobbyId);
                 int count = lobbyManager.getLobby(lobbyId)
                         .map(Lobby::getPlayerCount)
                         .orElse(0);
@@ -190,12 +195,53 @@ public final class MessageRouter {
             logger.info("[{}] LEAVE_LOBBY request: lobbyId='{}'", channelId, lobbyId);
 
             boolean left = lobbyManager.leaveLobby(lobbyId, ctx);
+            if (left) {
+                channelLobbyMap.remove(channelId, lobbyId);
+            }
 
             if (!left) {
                 logger.warn("[{}] Leave failed — not in lobby {}", channelId, lobbyId);
             }
         } catch (InvalidProtocolBufferException e) {
             logger.error("[{}] Malformed LEAVE_LOBBY payload: {}", channelId, e.getMessage());
+        }
+    }
+
+    private void handlePlayerInput(ChannelHandlerContext ctx, String channelId, Packet packet) {
+        try {
+            InputPacket input = InputPacket.parseFrom(packet.getPayload());
+            String lobbyId = channelLobbyMap.get(channelId);
+            if (lobbyId == null) {
+                logger.warn("[{}] PLAYER_INPUT dropped — client is not in a lobby", channelId);
+                return;
+            }
+
+            lobbyManager.getLobby(lobbyId).ifPresentOrElse(lobby -> {
+                if (lobby.getState() == LobbyState.COUNTDOWN) {
+                    // Start simulation as soon as gameplay input arrives.
+                    lobby.startGame();
+                }
+                lobby.enqueueInput(channelId, input);
+            }, () -> {
+                channelLobbyMap.remove(channelId, lobbyId);
+                logger.warn("[{}] PLAYER_INPUT dropped — lobby {} no longer exists", channelId, lobbyId);
+            });
+
+        } catch (InvalidProtocolBufferException e) {
+            logger.error("[{}] Malformed PLAYER_INPUT payload: {}", channelId, e.getMessage());
+        }
+    }
+
+    /**
+     * Clears channel-specific membership state after disconnect.
+     */
+    public void onDisconnect(ChannelHandlerContext ctx) {
+        String channelId = ctx.channel().id().asShortText();
+        String lobbyId = channelLobbyMap.remove(channelId);
+        if (lobbyId != null) {
+            lobbyManager.leaveLobby(lobbyId, ctx);
+        } else {
+            lobbyManager.removePlayerFromAll(ctx);
         }
     }
 

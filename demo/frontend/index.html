@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Multiplayer Server Demo</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+
+  <body>
+    <main class="app-shell">
+      <section class="panel controls">
+        <h1>Authoritative Server Demo</h1>
+        <p class="subtitle">
+          WebSocket + Protobuf against your Java Netty backend
+        </p>
+
+        <label for="serverUrl">Server URL</label>
+        <input id="serverUrl" value="ws://localhost:8080/game" />
+
+        <label for="protoPath">Proto Path</label>
+        <input id="protoPath" placeholder="auto-detect from workspace" />
+
+        <label for="lobbyName">Lobby Name</label>
+        <input id="lobbyName" value="frontend-demo" />
+
+        <label for="maxPlayers">Max Players</label>
+        <input id="maxPlayers" type="number" min="2" max="32" value="8" />
+
+        <label for="joinLobbyId">Join Lobby ID</label>
+        <div class="join-row">
+          <input id="joinLobbyId" placeholder="Enter existing lobby id" />
+          <button id="joinBtn" class="ghost">Join</button>
+        </div>
+
+        <div class="action-row">
+          <button id="connectBtn">Connect</button>
+          <button id="createBtn" disabled>Create Lobby</button>
+        </div>
+
+        <div class="hud-grid">
+          <div>
+            <span class="k">Status</span>
+            <span id="statusText" class="v">disconnected</span>
+          </div>
+          <div>
+            <span class="k">Lobby</span>
+            <span id="lobbyText" class="v">-</span>
+          </div>
+          <div>
+            <span class="k">Players</span>
+            <span id="playersText" class="v">0</span>
+          </div>
+          <div>
+            <span class="k">Tick</span>
+            <span id="tickText" class="v">0</span>
+          </div>
+        </div>
+
+        <p class="hint">
+          Move with arrow keys or WASD. The world view is authoritative from
+          server snapshots.
+        </p>
+      </section>
+
+      <section class="panel viewport-wrap">
+        <canvas id="worldCanvas" width="900" height="600"></canvas>
+        <pre id="log"></pre>
+      </section>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/protobufjs@7.4.0/dist/protobuf.min.js"></script>
+    <script src="app.js"></script>
+  </body>
+</html>

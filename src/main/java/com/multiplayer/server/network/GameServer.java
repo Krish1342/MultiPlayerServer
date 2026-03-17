@@ -1,5 +1,8 @@
 package com.multiplayer.server.network;
 
+import com.multiplayer.server.db.DatabaseManager;
+import com.multiplayer.server.db.UserRepository;
+import com.multiplayer.server.lobby.LobbyManager;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelOption;
@@ -22,11 +25,17 @@ public final class GameServer {
     private final int port;
     private final EventLoopGroup bossGroup;
     private final EventLoopGroup workerGroup;
+    private final DatabaseManager databaseManager;
+    private final LobbyManager lobbyManager;
+    private final UserRepository userRepository;
 
     public GameServer(int port) {
         this.port = port;
         this.bossGroup = new NioEventLoopGroup(1); // 1 thread – accepts connections
         this.workerGroup = new NioEventLoopGroup(); // default threads – handles I/O
+        this.databaseManager = new DatabaseManager();
+        this.lobbyManager = new LobbyManager();
+        this.userRepository = new UserRepository(databaseManager);
     }
 
     /**
@@ -38,7 +47,7 @@ public final class GameServer {
             var bootstrap = new ServerBootstrap()
                     .group(bossGroup, workerGroup)
                     .channel(NioServerSocketChannel.class)
-                    .childHandler(new WebSocketServerInitializer())
+                    .childHandler(new WebSocketServerInitializer(lobbyManager, userRepository))
                     .option(ChannelOption.SO_BACKLOG, 128)
                     .childOption(ChannelOption.SO_KEEPALIVE, true)
                     .childOption(ChannelOption.TCP_NODELAY, true);
@@ -63,6 +72,7 @@ public final class GameServer {
         logger.info("Shutting down game server...");
         bossGroup.shutdownGracefully();
         workerGroup.shutdownGracefully();
+        databaseManager.close();
         logger.info("Game server shut down.");
     }
 

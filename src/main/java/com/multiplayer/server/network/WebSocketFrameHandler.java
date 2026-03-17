@@ -83,4 +83,10 @@ public final class WebSocketFrameHandler extends SimpleChannelInboundHandler<Web
                 ctx.channel().remoteAddress(), cause.getMessage(), cause);
         ctx.close();
     }
+
+    @Override
+    public void channelInactive(ChannelHandlerContext ctx) throws Exception {
+        messageRouter.onDisconnect(ctx);
+        super.channelInactive(ctx);
+    }
 }
