@@ -262,7 +262,9 @@ async function connect() {
         "com.multiplayer.server.WorldStateSnapshot",
       ),
     };
-    state.packetTypeEnum = root.lookupEnum("com.multiplayer.server.Packet.Type").values;
+    state.packetTypeEnum = root.lookupEnum(
+      "com.multiplayer.server.Packet.Type",
+    ).values;
     state.packetTypeById = Object.fromEntries(
       Object.entries(state.packetTypeEnum).map(([name, id]) => [id, name]),
     );
