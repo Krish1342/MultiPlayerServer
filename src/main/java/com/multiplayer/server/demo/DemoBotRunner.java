@@ -24,6 +24,7 @@ public final class DemoBotRunner {
         String wsUrl = args.length > 0 ? args[0] : "ws://localhost:8080/game";
         int botCount = args.length > 1 ? Integer.parseInt(args[1]) : 4;
         int maxPlayers = args.length > 2 ? Integer.parseInt(args[2]) : Math.max(botCount, 8);
+        String existingLobbyId = args.length > 3 ? args[3].trim() : "";
 
         if (botCount < 2) {
             throw new IllegalArgumentException("botCount must be at least 2");
@@ -37,9 +38,26 @@ public final class DemoBotRunner {
             bots.add(host);
             host.connect().get(10, TimeUnit.SECONDS);
 
-            String lobbyName = "demo-" + System.currentTimeMillis();
-            String lobbyId = host.createLobby(lobbyName, maxPlayers).get(10, TimeUnit.SECONDS);
-            logger.info("Host created lobby '{}' with id {}", lobbyName, lobbyId);
+            String lobbyId;
+            if (!existingLobbyId.isEmpty()) {
+                boolean joined = host.joinLobby(existingLobbyId).get(10, TimeUnit.SECONDS);
+                if (!joined) {
+                    throw new IllegalStateException("Host failed to join existing lobby " + existingLobbyId);
+                }
+                lobbyId = existingLobbyId;
+                logger.info("Host joined existing lobby {}", lobbyId);
+            } else {
+                String lobbyName = "demo";
+                lobbyId = host.createLobby(lobbyName, maxPlayers).get(10, TimeUnit.SECONDS);
+                logger.info("Host ready in demo lobby '{}' with id {}", lobbyName, lobbyId);
+            }
+
+            System.out.println();
+            System.out.println("==================================================");
+            System.out.println("DEMO_LOBBY_ID=" + lobbyId);
+            System.out.println("Join this lobby in frontend with ID: " + lobbyId);
+            System.out.println("==================================================");
+            System.out.println();
 
             List<CompletableFuture<Void>> joins = new ArrayList<>();
             for (int i = 2; i <= botCount; i++) {

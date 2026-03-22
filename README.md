@@ -20,6 +20,22 @@ mvn -DskipTests exec:java -Dexec.mainClass="com.multiplayer.server.network.GameS
 
 The server listens on port `8080` by default.
 
+### Windows one-time setup + start script
+
+From repository root:
+
+```powershell
+.\start_server.bat --setup
+```
+
+This persists `JAVA_HOME`, `MAVEN_HOME`, and appends their `bin` folders to your user `PATH`.
+
+Then start the server any time with:
+
+```powershell
+.\start_server.bat
+```
+
 ## Run Demo Bots
 
 Open a second terminal:
@@ -30,9 +46,20 @@ mvn -DskipTests exec:java -Dexec.mainClass="com.multiplayer.server.demo.DemoBotR
 
 Args format:
 
-`<wsUrl> <botCount> <maxPlayers>`
+`<wsUrl> <botCount> <maxPlayers> [existingLobbyId]`
 
 Example above starts 6 bots with max 12 players.
+
+By default, bots now create/reuse a stable demo lobby with ID `demo0001`.
+You can join this lobby from the browser frontend to see bots moving.
+
+To make bots join a lobby created in the browser UI, pass the lobby id as the 4th arg:
+
+```powershell
+mvn -DskipTests exec:java -Dexec.mainClass="com.multiplayer.server.demo.DemoBotRunner" -Dexec.args="ws://localhost:8080/game 6 12 ab12cd34"
+```
+
+PowerShell note: use `-Dexec.mainClass` (not `.mainClass`).
 
 ## Run Browser Frontend
 

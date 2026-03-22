@@ -146,8 +146,8 @@ public final class Lobby {
         LobbyState current = state.get();
 
         boolean canJoin = switch (current) {
-            case WAITING, COUNTDOWN -> true;
-            case PLAYING, ENDED -> false;
+            case WAITING, COUNTDOWN, PLAYING -> true;
+            case ENDED -> false;
         };
 
         if (!canJoin) {
@@ -164,6 +164,16 @@ public final class Lobby {
         if (players.addIfAbsent(ctx)) {
             logger.info("Lobby [{}] player joined: {} ({}/{})",
                     lobbyId, remoteAddress(ctx), players.size(), maxPlayers);
+
+            // If a player joins after the game already started, register them
+            // immediately so they appear in authoritative snapshots.
+            if (state.get() == LobbyState.PLAYING) {
+                GameLoop loop = this.gameLoop;
+                if (loop != null && loop.isRunning()) {
+                    loop.addPlayer(ctx.channel().id().asShortText());
+                }
+            }
+
             onPlayerCountChanged();
             return true;
         }
@@ -179,6 +189,12 @@ public final class Lobby {
         if (players.remove(ctx)) {
             logger.info("Lobby [{}] player left: {} ({}/{})",
                     lobbyId, remoteAddress(ctx), players.size(), maxPlayers);
+
+            GameLoop loop = this.gameLoop;
+            if (loop != null) {
+                loop.removePlayer(ctx.channel().id().asShortText());
+            }
+
             onPlayerCountChanged();
             return true;
         }
@@ -194,6 +210,10 @@ public final class Lobby {
 
     public int getPlayerCount() {
         return players.size();
+    }
+
+    public int getMaxPlayers() {
+        return maxPlayers;
     }
 
     // ── FSM transitions ─────────────────────────────────────────────────

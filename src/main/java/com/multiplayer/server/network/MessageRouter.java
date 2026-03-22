@@ -159,20 +159,19 @@ public final class MessageRouter {
 
             logger.info("[{}] JOIN_LOBBY request: lobbyId='{}'", channelId, lobbyId);
 
-            boolean joined = lobbyManager.joinLobby(lobbyId, ctx);
+                LobbyManager.JoinLobbyResult joinResult = lobbyManager.joinLobby(lobbyId, ctx);
 
             var responseBuilder = JoinLobbyResponse.newBuilder()
-                    .setSuccess(joined)
+                    .setSuccess(joinResult.success())
                     .setLobbyId(lobbyId);
 
-            if (joined) {
+                if (joinResult.success()) {
                 channelLobbyMap.put(channelId, lobbyId);
-                int count = lobbyManager.getLobby(lobbyId)
-                        .map(Lobby::getPlayerCount)
-                        .orElse(0);
-                responseBuilder.setPlayerCount(count).setMessage("Joined lobby");
+                responseBuilder.setPlayerCount(joinResult.playerCount())
+                    .setMessage(joinResult.message());
             } else {
-                responseBuilder.setMessage("Failed to join lobby — full or does not exist");
+                responseBuilder.setPlayerCount(joinResult.playerCount())
+                    .setMessage(joinResult.message());
             }
 
             sendResponse(ctx, Packet.Type.JOIN_LOBBY, responseBuilder.build().toByteArray());

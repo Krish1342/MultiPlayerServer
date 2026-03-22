@@ -11,6 +11,7 @@ com\multiplayer\server\proto\GameMessages$WorldStateSnapshotOrBuilder.class
 com\multiplayer\server\proto\GameMessages$LoginResponse.class
 com\multiplayer\server\demo\DemoBotClient.class
 com\multiplayer\server\lobby\Lobby$LobbyState$3.class
+com\multiplayer\server\lobby\LobbyManager$1.class
 com\multiplayer\server\network\MessageRouter.class
 com\multiplayer\server\network\MessageRouter$1.class
 com\multiplayer\server\proto\GameMessages$WorldStateSnapshot$Builder.class
@@ -46,6 +47,7 @@ com\multiplayer\server\demo\DemoBotClient$BotListener.class
 com\multiplayer\server\proto\GameMessages$CreateLobbyResponse$1.class
 com\multiplayer\server\proto\GameMessages$JoinLobbyRequest.class
 com\multiplayer\server\proto\GameMessages$Packet$1.class
+com\multiplayer\server\lobby\LobbyManager$JoinLobbyResult.class
 com\multiplayer\server\demo\DemoBotRunner.class
 com\multiplayer\server\proto\GameMessages$Packet$Type.class
 com\multiplayer\server\proto\GameMessages$PlayerSnapshotOrBuilder.class
