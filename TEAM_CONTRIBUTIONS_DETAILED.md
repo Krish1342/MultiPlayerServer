@@ -6,12 +6,13 @@ Guide: Suhas Joshi
 
 This document provides a detailed, file-level contribution mapping for report and submission use.
 
-## 1. Arnav Karwa - Frontend and Integration
+## 1. Arnav Karwa - Frontend, Java Client Integration, and Reporting
 
 ### 1.1 Primary ownership summary
 
 - Owned browser UI and client interaction flow.
 - Owned frontend-to-backend WebSocket integration from browser side.
+- Contributed Java demo-client integration for end-to-end execution readiness.
 - Owned final integration verification across server, bots, and browser demo.
 - Co-owned report structuring and documentation polish.
 
@@ -80,6 +81,18 @@ This document provides a detailed, file-level contribution mapping for report an
   - connect and join lobby
 - Added clear operator guidance for interacting with demo lobby.
 
+#### `src/main/java/com/multiplayer/server/demo/DemoBotRunner.java`
+
+- Co-developed and maintained Java demo runner flow for practical team testing.
+- Refined runtime execution usage for host and joiner bot sequence.
+- Verified command argument paths for lobby creation vs existing lobby join.
+
+#### `src/main/java/com/multiplayer/server/demo/DemoBotClient.java`
+
+- Contributed Java client-side validation for packet send/receive behavior.
+- Assisted integration checks for create/join response handling and state-update consumption.
+- Supported periodic input dispatch verification to align with frontend-observed movement.
+
 #### `report.md`
 
 - Structured report sections for formal submission flow.
@@ -94,6 +107,7 @@ This document provides a detailed, file-level contribution mapping for report an
 - Verified screenshot-ready states:
   - connected idle state
   - active lobby with multiple player snapshots
+- Verified Java bot + browser combined run as an end-to-end integration scenario.
 
 ---
 
@@ -251,20 +265,18 @@ This document provides a detailed, file-level contribution mapping for report an
 
 #### `src/main/java/com/multiplayer/server/demo/DemoBotClient.java`
 
-- Implemented websocket bot client with packet encode/decode path.
-- Implemented create-lobby and join-lobby request helpers.
-- Implemented periodic randomized movement sender for load-like behavior.
-- Implemented response parsing for create/join/state-update messages.
-- Implemented fragmented binary frame reassembly in listener.
-- Implemented controlled close and input-scheduler shutdown.
+- Co-developed websocket bot client behavior with packet encode/decode support.
+- Validated create-lobby and join-lobby helper flow with integration testing.
+- Validated periodic randomized movement sender under concurrent bot scenarios.
+- Validated response parsing for create/join/state-update messages.
+- Validated fragmented binary frame reassembly and close behavior.
 
 #### `src/main/java/com/multiplayer/server/demo/DemoBotRunner.java`
 
-- Implemented host-plus-joiner bot orchestration pattern.
-- Implemented existing-lobby and create-lobby flow selection.
-- Implemented join fan-out and aggregate completion waiting.
-- Implemented run-until-enter interactive control for demo sessions.
-- Implemented orderly bot resource cleanup in finally block.
+- Co-developed host-plus-joiner orchestration with integration verification.
+- Validated existing-lobby and create-lobby flow selection.
+- Validated join fan-out and aggregate completion waiting behavior.
+- Validated run-until-enter control and orderly resource cleanup flow.
 
 #### `src/main/proto/game_messages.proto`
 
@@ -324,8 +336,8 @@ This document provides a detailed, file-level contribution mapping for report an
 | `src/main/java/com/multiplayer/server/game/PlayerState.java`                    | Samay Gandhi  | Krish Lodha               |
 | `src/main/java/com/multiplayer/server/db/DatabaseManager.java`                  | Krish Lodha   | Samay Gandhi              |
 | `src/main/java/com/multiplayer/server/db/UserRepository.java`                   | Krish Lodha   | Samay Gandhi              |
-| `src/main/java/com/multiplayer/server/demo/DemoBotClient.java`                  | Samay Gandhi  | Arnav Karwa               |
-| `src/main/java/com/multiplayer/server/demo/DemoBotRunner.java`                  | Samay Gandhi  | Arnav Karwa               |
+| `src/main/java/com/multiplayer/server/demo/DemoBotClient.java`                  | Arnav Karwa   | Samay Gandhi              |
+| `src/main/java/com/multiplayer/server/demo/DemoBotRunner.java`                  | Arnav Karwa   | Samay Gandhi              |
 | `src/main/proto/game_messages.proto`                                            | Samay Gandhi  | Krish Lodha               |
 | `demo/frontend/index.html`                                                      | Arnav Karwa   | Samay Gandhi              |
 | `demo/frontend/styles.css`                                                      | Arnav Karwa   | Samay Gandhi              |

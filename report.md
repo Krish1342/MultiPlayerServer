@@ -152,7 +152,7 @@ Component explanation:
 
 | Team Member  | Role                               | Responsibility                                                                                                                    |
 | ------------ | ---------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
-| Arnav Karwa  | Frontend and Integration           | Browser UI design and interaction flow, client-side WebSocket integration, report structuring, and final integration verification |
+| Arnav Karwa  | Frontend, Java Client Integration, and Reporting | Browser UI design and interaction flow, client-side WebSocket integration, Java demo bot flow integration and execution support, report structuring, and final integration verification |
 | Krish Lodha  | Backend and Networking             | Netty server setup, WebSocket pipeline, packet routing, and API-level integration with lobby and simulation modules               |
 | Samay Gandhi | Game Logic, Testing and Validation | Lobby state machine and game loop validation, bot scenario execution, test evidence preparation, and documentation support        |
 
