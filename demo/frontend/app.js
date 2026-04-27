@@ -33,6 +33,19 @@ const state = {
 const canvas = ui.canvas;
 const ctx = canvas.getContext("2d");
 
+const KEY = {
+  LEFT: "ArrowLeft",
+  RIGHT: "ArrowRight",
+  UP: "ArrowUp",
+  DOWN: "ArrowDown",
+  A: "KeyA",
+  D: "KeyD",
+  W: "KeyW",
+  S: "KeyS",
+  SHIFT_LEFT: "ShiftLeft",
+  SHIFT_RIGHT: "ShiftRight",
+};
+
 function logLine(message) {
   const ts = new Date().toLocaleTimeString();
   ui.log.textContent = `[${ts}] ${message}\n${ui.log.textContent}`.slice(
@@ -201,10 +214,10 @@ function startInputLoop() {
       return;
     }
 
-    const left = state.keys.has("ArrowLeft") || state.keys.has("a");
-    const right = state.keys.has("ArrowRight") || state.keys.has("d");
-    const up = state.keys.has("ArrowUp") || state.keys.has("w");
-    const down = state.keys.has("ArrowDown") || state.keys.has("s");
+    const left = state.keys.has(KEY.LEFT) || state.keys.has(KEY.A);
+    const right = state.keys.has(KEY.RIGHT) || state.keys.has(KEY.D);
+    const up = state.keys.has(KEY.UP) || state.keys.has(KEY.W);
+    const down = state.keys.has(KEY.DOWN) || state.keys.has(KEY.S);
 
     let dx = 0;
     let dy = 0;
@@ -213,6 +226,9 @@ function startInputLoop() {
     if (right) dx += 1;
     if (up) dy += 1;
     if (down) dy -= 1;
+
+    const sprinting =
+      state.keys.has(KEY.SHIFT_LEFT) || state.keys.has(KEY.SHIFT_RIGHT);
 
     if (dx === 0 && dy === 0) {
       return;
@@ -224,6 +240,7 @@ function startInputLoop() {
       playerId: state.myHint,
       dx,
       dy,
+      sprinting,
       sequence: state.inputSeq,
     });
   }, 100);
@@ -335,11 +352,24 @@ ui.joinBtn.addEventListener("click", () => {
 });
 
 window.addEventListener("keydown", (event) => {
-  state.keys.add(event.key);
+  state.keys.add(event.code);
+
+  if (
+    event.code === KEY.LEFT ||
+    event.code === KEY.RIGHT ||
+    event.code === KEY.UP ||
+    event.code === KEY.DOWN
+  ) {
+    event.preventDefault();
+  }
 });
 
 window.addEventListener("keyup", (event) => {
-  state.keys.delete(event.key);
+  state.keys.delete(event.code);
+});
+
+window.addEventListener("blur", () => {
+  state.keys.clear();
 });
 
 drawWorld();

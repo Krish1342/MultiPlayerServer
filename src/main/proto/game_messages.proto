@@ -72,6 +72,7 @@ message InputPacket {
     float  dx        = 2;   // horizontal input (-1.0 to 1.0)
     float  dy        = 3;   // vertical   input (-1.0 to 1.0)
     int64  sequence  = 4;   // client-side frame sequence for reconciliation
+    bool   sprinting = 5;   // true while Shift is pressed
 }
 
 /** A single player's authoritative position. */

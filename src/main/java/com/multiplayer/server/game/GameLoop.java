@@ -217,7 +217,10 @@ public final class GameLoop implements Runnable {
             PlayerState ps = playerStates.get(polled.playerId());
             if (ps != null) {
                 InputPacket input = polled.input();
-                ps.applyInput(input.getDx(), input.getDy());
+                ps.applyInput(
+                        input.getDx(),
+                        input.getDy(),
+                        input.getSprinting());
             }
         }
     }

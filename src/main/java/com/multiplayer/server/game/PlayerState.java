@@ -15,6 +15,7 @@ public final class PlayerState {
 
     /** Movement speed in units per tick. */
     private static final float SPEED = 3.0f;
+    private static final float SPRINT_MULTIPLIER = 1.8f;
 
     /** Player size (half-width/half-height for box collider). */
     public static final float RADIUS = 24.0f;
@@ -40,13 +41,16 @@ public final class PlayerState {
      * @param dx horizontal input (-1.0 left, +1.0 right)
      * @param dy vertical input (-1.0 down, +1.0 up)
      */
-    public void applyInput(float dx, float dy) {
+    public void applyInput(float dx, float dy, boolean sprinting) {
         dx = clamp(dx, -1.0f, 1.0f);
         dy = clamp(dy, -1.0f, 1.0f);
 
+        float speedMultiplier = sprinting ? SPRINT_MULTIPLIER : 1.0f;
+        float appliedSpeed = SPEED * speedMultiplier;
+
         // Clamp center position so the box edges stay within world boundaries
-        this.x = clamp(this.x + dx * SPEED, MIN_BOUND + RADIUS, MAX_BOUND - RADIUS);
-        this.y = clamp(this.y + dy * SPEED, MIN_BOUND + RADIUS, MAX_BOUND - RADIUS);
+        this.x = clamp(this.x + dx * appliedSpeed, MIN_BOUND + RADIUS, MAX_BOUND - RADIUS);
+        this.y = clamp(this.y + dy * appliedSpeed, MIN_BOUND + RADIUS, MAX_BOUND - RADIUS);
     }
 
     public void setPosition(float x, float y) {
