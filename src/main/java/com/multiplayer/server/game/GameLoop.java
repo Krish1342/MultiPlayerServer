@@ -163,9 +163,48 @@ public final class GameLoop implements Runnable {
 
         // Phase 2 — Update world (positions already applied in processInputs)
         // Additional game logic (collision, physics) would go here.
+        resolveCollisions();
 
         // Phase 3 — Build snapshot and broadcast
         broadcastWorldState();
+    }
+
+    /**
+     * <b>Phase 2:</b> Resolves AABB collisions between all players in the lobby.
+     * Each player is treated as a square box with side length 2 * RADIUS.
+     */
+    private void resolveCollisions() {
+        if (playerStates.size() < 2) return;
+
+        List<PlayerState> states = List.copyOf(playerStates.values());
+        float halfSize = PlayerState.RADIUS;
+        float combinedHalfSize = halfSize * 2.0f;
+
+        for (int i = 0; i < states.size(); i++) {
+            for (int j = i + 1; j < states.size(); j++) {
+                PlayerState p1 = states.get(i);
+                PlayerState p2 = states.get(j);
+
+                float dx = p1.getX() - p2.getX();
+                float dy = p1.getY() - p2.getY();
+
+                float overlapX = combinedHalfSize - Math.abs(dx);
+                float overlapY = combinedHalfSize - Math.abs(dy);
+
+                if (overlapX > 0 && overlapY > 0) {
+                    // Collision detected! Resolve by pushing apart along the axis of least penetration.
+                    if (overlapX < overlapY) {
+                        float pushX = (dx > 0) ? overlapX : -overlapX;
+                        p1.setPosition(p1.getX() + pushX * 0.5f, p1.getY());
+                        p2.setPosition(p2.getX() - pushX * 0.5f, p2.getY());
+                    } else {
+                        float pushY = (dy > 0) ? overlapY : -overlapY;
+                        p1.setPosition(p1.getX(), p1.getY() + pushY * 0.5f);
+                        p2.setPosition(p2.getX(), p2.getY() - pushY * 0.5f);
+                    }
+                }
+            }
+        }
     }
 
     /**

@@ -120,7 +120,27 @@ if errorlevel 1 (
 exit /b 0
 
 :help
-echo Usage:
-echo   .\start_server.bat            ^(PowerShell: start server if env is already configured^)
-echo   .\start_server.bat --setup    ^(PowerShell: persist JAVA_HOME, MAVEN_HOME, and user PATH^)
-exit /b 0
+@echo off
+REM Minimal, robust Multiplayer Server start script
+
+REM Check JAVA_HOME
+if not defined JAVA_HOME (
+    echo ERROR: JAVA_HOME is not set. Please set JAVA_HOME to your Java 21 JDK folder.
+    exit /b 1
+)
+if not exist "%JAVA_HOME%\bin\java.exe" (
+    echo ERROR: JAVA_HOME does not point to a valid JDK. Current value: %JAVA_HOME%
+    exit /b 1
+)
+
+REM Check Maven
+where mvn >nul 2>nul
+if errorlevel 1 (
+    echo ERROR: Maven (mvn) not found in PATH. Please install Maven and add it to your PATH.
+    exit /b 1
+)
+
+REM Start the server
+echo Starting Multiplayer server...
+mvn --% -DskipTests exec:java -Dexec.mainClass=com.multiplayer.server.network.GameServer
+exit /b %errorlevel%

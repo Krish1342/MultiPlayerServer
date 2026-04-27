@@ -16,6 +16,9 @@ public final class PlayerState {
     /** Movement speed in units per tick. */
     private static final float SPEED = 3.0f;
 
+    /** Player size (half-width/half-height for box collider). */
+    public static final float RADIUS = 24.0f;
+
     /** World boundaries. */
     private static final float MIN_BOUND = -500.0f;
     private static final float MAX_BOUND = 500.0f;
@@ -41,8 +44,14 @@ public final class PlayerState {
         dx = clamp(dx, -1.0f, 1.0f);
         dy = clamp(dy, -1.0f, 1.0f);
 
-        this.x = clamp(this.x + dx * SPEED, MIN_BOUND, MAX_BOUND);
-        this.y = clamp(this.y + dy * SPEED, MIN_BOUND, MAX_BOUND);
+        // Clamp center position so the box edges stay within world boundaries
+        this.x = clamp(this.x + dx * SPEED, MIN_BOUND + RADIUS, MAX_BOUND - RADIUS);
+        this.y = clamp(this.y + dy * SPEED, MIN_BOUND + RADIUS, MAX_BOUND - RADIUS);
+    }
+
+    public void setPosition(float x, float y) {
+        this.x = x;
+        this.y = y;
     }
 
     // ── Accessors ───────────────────────────────────────────────────────

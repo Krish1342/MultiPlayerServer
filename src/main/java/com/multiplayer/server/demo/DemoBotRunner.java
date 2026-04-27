@@ -81,7 +81,11 @@ public final class DemoBotRunner {
 
             bots.forEach(DemoBotClient::startSendingInput);
             logger.info("Bots are sending movement input to server. Press ENTER to stop.");
-            new Scanner(System.in).nextLine();
+            try (java.util.Scanner scanner = new java.util.Scanner(System.in)) {
+                if (scanner.hasNextLine()) {
+                    scanner.nextLine();
+                }
+            }
 
         } finally {
             for (DemoBotClient bot : bots) {
